@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import contextlib
 import io
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -26,10 +25,9 @@ import yaml
 
 from hodmock.config import DEFAULT_CONFIG, HodMockConfig
 
-# halomodel_module（CAMB が必要）は compute_baseline_ng 内で遅延インポートする。
+# hodmock.halomodel（CAMB が必要）は compute_baseline_ng 内で遅延インポートする。
 # これにより、rescale_params / save_params など CAMB 不要の関数は
-# hoddies 環境以外でも使える。
-_CODE_DIR = Path(__file__).parent.parent.parent  # code/ ディレクトリ
+# CAMB がない環境でも使える。
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -89,10 +87,7 @@ def compute_baseline_ng(
     dict[float, float]
         {z: ng [(Mpc/h)^-3]}
     """
-    # hoddies 環境でのみ利用可能な CAMB ベースのモジュールを遅延インポート
-    if str(_CODE_DIR) not in sys.path:
-        sys.path.insert(0, str(_CODE_DIR))
-    from halomodel_module import HaloModel  # noqa: PLC0415
+    from hodmock.halomodel import HaloModel  # noqa: PLC0415  (CAMB が必要)
 
     ng_dict: dict[float, float] = {}
 
