@@ -40,10 +40,11 @@ def generate_yaml(
     """HODDIES YAML テンプレートに Ac/As/density/z を埋め込んで per-z YAML を生成する。
 
     テンプレート内のプレースホルダ:
-        __AC__      → hod_params["Ac"]
-        __AS__      → hod_params["As"]
-        __DENSITY__ → hod_params["density"]
-        __Z__       → z
+        __AC__        → hod_params["Ac"]
+        __AS__        → hod_params["As"]
+        __DENSITY__   → hod_params["density"]
+        __Z__         → z
+        __MASS_CUT__  → cfg.mass_cut
 
     Parameters
     ----------
@@ -72,10 +73,11 @@ def generate_yaml(
     tmpl = template_path.read_text()
     out = (
         tmpl
-        .replace("__AC__",      str(hod_params["Ac"]))
-        .replace("__AS__",      str(hod_params["As"]))
-        .replace("__DENSITY__", str(hod_params["density"]))
-        .replace("__Z__",       str(z))
+        .replace("__AC__",       str(hod_params["Ac"]))
+        .replace("__AS__",       str(hod_params["As"]))
+        .replace("__DENSITY__",  str(hod_params["density"]))
+        .replace("__Z__",        str(z))
+        .replace("__MASS_CUT__", str(cfg.mass_cut))
     )
 
     out_path = yaml_dir / f"Uchuu_HOD_z{z:.2f}.yaml"

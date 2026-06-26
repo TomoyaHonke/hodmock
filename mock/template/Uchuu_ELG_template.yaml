@@ -55,7 +55,7 @@ hcat:
   boxsize: 2000  # Simulation box size (to be set if path_to_sim is provided)
   path_to_sim: null  # Path to halo catalogs
   path_to_part: null  # Path to particle or subhalos data for satellites sampling
-  mass_cut: 11.5  # Minimum halo mass cut in log10(Msun/h) e.g. 12 to cut M < 10**12
+  mass_cut: __MASS_CUT__  # Minimum halo mass cut in log10(Msun/h) e.g. 12 to cut M < 10**12
   z_simu: __Z__  # Redshift of simulation snapshot (list of redshifts from Abacus light cone shells.)
                 # Redshift available for Uchuu Planck2015 snapshot [0.43, 0.49, 0.56, 0.63, 0.70, 0.78, 0.86, 0.94, 1.03, 1.12, 1.22, 1.32, 1.43, 1.65]
                 # For Uchuu Planck 2018 and DDE simulations, only z=2.03, 1.77, 1.54, 1.3, 1.03, 0.78, 0.49, 0.3, 0.19, 0. are available.

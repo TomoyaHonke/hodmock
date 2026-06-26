@@ -36,27 +36,25 @@ def _default_z_list() -> list[float]:
 
 
 def _default_z_to_halodir() -> dict[float, str]:
-    """z → ハローカタログサブディレクトリ名の対応表（Uchuu デフォルト）。
-    実際のスナップショット番号を確認して埋めること。
-    """
+    """z → ハローカタログサブディレクトリ名の対応表（Uchuu デフォルト）。"""
     return {
-        0.63: "halodir_???",  # TODO
-        0.70: "halodir_???",  # TODO
-        0.78: "halodir_???",  # TODO
-        0.86: "halodir_???",  # TODO
+        0.63: "halodir_038",
+        0.70: "halodir_037",
+        0.78: "halodir_036",
+        0.86: "halodir_035",
         0.94: "halodir_034",
-        1.03: "halodir_???",  # TODO
-        1.12: "halodir_???",  # TODO
-        1.22: "halodir_???",  # TODO
-        1.32: "halodir_???",  # TODO
-        1.43: "halodir_???",  # TODO
-        1.54: "halodir_???",  # TODO
-        1.65: "halodir_???",  # TODO
-        1.77: "halodir_???",  # TODO（Uchuu にこの z があるか要確認）
-        1.90: "halodir_???",  # TODO（同上）
-        2.03: "halodir_???",  # TODO（同上）
-        2.17: "halodir_???",  # TODO（同上）
-        2.31: "halodir_???",  # TODO（同上）
+        1.03: "halodir_033",
+        1.12: "halodir_032",
+        1.22: "halodir_031",
+        1.32: "halodir_030",
+        1.43: "halodir_029",
+        1.54: "halodir_028",
+        1.65: "halodir_027",
+        1.77: "halodir_026",
+        1.90: "halodir_025",
+        2.03: "halodir_024",
+        2.17: "halodir_023",
+        2.31: "halodir_022",
     }
 
 
@@ -97,9 +95,8 @@ def _default_hod_bins() -> list[tuple[float, float]]:
 
 
 def _default_hod_baseline() -> list[dict]:
-    """halomodel_module での ng 計算に使うベースライン HOD パラメータ。
-    hod_bins の各 bin に対応する dict のリスト。
-    Ac=0.1 のときの ng が基準値 ng_hod になる。
+    """hodmock.halomodel での ng 計算に使うベースライン HOD パラメータ。
+    hod_bins の各 bin に対応する dict のリスト。Ac=0.1 のときの ng が基準値 ng_hod になる。
     """
     base = {
         "model":      "mhmq",
@@ -190,14 +187,14 @@ class HodMockConfig:
     """rescaling 用 HOD パラメータ bin。範囲外の z は端の bin に外挿する。"""
 
     hod_baseline: list[dict] = field(default_factory=_default_hod_baseline)
-    """hod_bins 各 bin のベースライン HOD パラメータ（halomodel_module 形式）。"""
+    """hod_bins 各 bin のベースライン HOD パラメータ（hodmock.halomodel 形式）。"""
 
     hod_ac_base: np.ndarray = field(default_factory=_default_hod_ac_base)
-    """hod_bins 各 bin の Ac ベースライン値（halomodel_module で ng_hod を計算するときの Ac）。"""
+    """hod_bins 各 bin の Ac ベースライン値（ng_hod 計算の基準値）。"""
 
     hod_as_base: np.ndarray = field(default_factory=_default_hod_as_base)
     """hod_bins 各 bin の HODDIES ベースライン As 値（絶対振幅）。
-    halomodel_module に渡す「絶対 As」は hod_ac_base * hod_as_base で求まる。"""
+    halomodel での検証時は hod_ac_base * hod_as_base を渡す。"""
 
     # ── Halo model 計算グリッド ───────────────────────────────────────────────
     k_arr: np.ndarray = field(default_factory=_default_k_arr)
