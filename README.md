@@ -1,6 +1,6 @@
 # hodmock
 
-HOD mock カタログ生成パイプライン。[HODDIES](https://github.com/HodorFM/HODDIES) を用いて Uchuu シミュレーションから ELG mock を作成する。
+HOD mock カタログ生成パイプライン。[HODDIES](https://github.com/antoine-rocher/HODDIES) を用いて Uchuu シミュレーションから ELG mock を作成する。
 
 ## 概要
 
