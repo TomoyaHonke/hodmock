@@ -140,6 +140,17 @@ def _default_m_arr() -> np.ndarray:
     return np.logspace(10, 15, 200)  # [Msun/h]
 
 
+def _default_cosmo_params() -> dict:
+    """Planck 2018 コスモロジーパラメータ（CAMB 形式）。"""
+    return {
+        'H0':    67.4,
+        'ombh2': 0.0224,
+        'omch2': 0.12,
+        'As':    2.1e-9,
+        'ns':    0.965,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Config dataclass
 # ─────────────────────────────────────────────────────────────────────────────
@@ -194,6 +205,25 @@ class HodMockConfig:
 
     m_arr: np.ndarray = field(default_factory=_default_m_arr)
     """ハロー質量グリッド [Msun/h]。"""
+
+    # ── コスモロジー / Halo model モデル選択 ──────────────────────────────────
+    cosmo_params: dict = field(default_factory=_default_cosmo_params)
+    """CAMB に渡すコスモロジーパラメータ。キー: H0, ombh2, omch2, As, ns。"""
+
+    colossus_cosmo: str = "planck18"
+    """Colossus のコスモロジー名。cosmo_params と整合させること。"""
+
+    hmf_model: str = "tinker08"
+    """ハロー質量関数モデル（Colossus）。例: 'press74', 'sheth99', 'tinker08'。"""
+
+    conc_model: str = "diemer19"
+    """ハロー集中度モデル（Colossus）。例: 'duffy08', 'diemer19'。"""
+
+    bias_model: str = "tinker10"
+    """ハローバイアスモデル（Colossus）。例: 'tinker10', 'sheth01'。"""
+
+    halomodel_Nr: int = 512
+    """NFW プロファイルの Fourier 変換で使う動径グリッド点数。"""
 
     # ── シミュレーション / ジョブ設定 ────────────────────────────────────────
     mass_cut: float = 11.0

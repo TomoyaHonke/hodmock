@@ -96,7 +96,15 @@ def compute_baseline_ng(
         hod = cfg.hod_baseline[hod_i]
 
         with contextlib.redirect_stdout(io.StringIO()):
-            hm = HaloModel(cfg.k_arr, cfg.m_arr, z)
+            hm = HaloModel(
+                cfg.k_arr, cfg.m_arr, z,
+                cosmo_params=cfg.cosmo_params,
+                colossus_cosmo=cfg.colossus_cosmo,
+                hmf_model=cfg.hmf_model,
+                conc_model=cfg.conc_model,
+                bias_model=cfg.bias_model,
+                Nr=cfg.halomodel_Nr,
+            )
 
         ng = hm.compute_ng(hod)
         ng_dict[z] = ng
