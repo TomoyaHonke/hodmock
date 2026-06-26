@@ -15,19 +15,56 @@ PFS などのサーベイターゲット銀河数密度 `ng` に合わせた HOD
 
 ## インストール / 環境
 
-HODDIES と CAMB はそれぞれ特定の conda 環境を必要とする。各モジュールは必要な関数内で遅延インポートされているため、環境を分けて使用できる。
+### 必要パッケージ
 
-```
-hoddies 環境  — HODDIES, mpytools, CAMB, colossus, mcfit
-               → ng 計算 / mock 生成に必要
-```
+すべての機能は `hoddies` conda 環境で動作する。各モジュールは必要な関数内で遅延インポートされているため、パッケージのインポート自体はどの環境でも行える。
+
+| パッケージ | バージョン（確認済み） | 用途 |
+|---|---|---|
+| `numpy` | 2.2.6 | 数値計算全般 |
+| `scipy` | 1.15.3 | 積分・補間（halomodel） |
+| `h5py` | 3.16.0 | ハローカタログ（h5 形式）読み込み |
+| `pyyaml` | 6.0.3 | YAML 読み書き |
+| `camb` | 1.6.6 | 物質パワースペクトル計算（ng 計算時に必要） |
+| `colossus` | — | HMF・集中度・バイアスモデル（ng 計算時に必要） |
+| `mcfit` | — | P(k) → ξ(r) Fourier 変換（ng 計算時に必要） |
+| `HODDIES` | 0.1.2 | mock カタログ生成 |
+| `mpytools` | 1.0.0 | ハローカタログの Catalog クラス |
+
+### インストール手順
+
+**Step 1 — hoddies conda 環境を有効化**
 
 ```bash
-# パッケージを編集可能モードでインストール（hodmock/ 直下で）
+conda activate hoddies
+```
+
+**Step 2 — colossus・mcfit が未インストールの場合は追加**
+
+```bash
+pip install colossus mcfit
+```
+
+**Step 3 — hodmock を編集可能モードでインストール**
+
+`/home/honke/code` 配下に `hodmock/` が置かれている前提で、以下のどちらかで使用できる。
+
+```bash
+# 方法 A: sys.path に追加（setup.py 不要）
+export PYTHONPATH="/home/honke/code:$PYTHONPATH"
+
+# 方法 B: 編集可能インストール（pyproject.toml を用意した場合）
+cd /home/honke/code/hodmock
 pip install -e .
 ```
 
-または `sys.path` に `/home/honke/code` を追加する方法でも動作する。
+方法 A が手軽。Jupyter Notebook から使う場合も同様。
+
+```python
+import sys
+sys.path.insert(0, "/home/honke/code")
+from hodmock.config import HodMockConfig
+```
 
 ## ディレクトリ構成
 
