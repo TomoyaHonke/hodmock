@@ -15,11 +15,11 @@ PFS などのサーベイターゲット銀河数密度 `ng` に合わせた HOD
 
 ## インストール / 環境
 
-HODDIES と halomodel_module はそれぞれ特定の conda 環境を必要とする。各モジュールは必要な関数内で遅延インポートされているため、環境を分けて使用できる。
+HODDIES と CAMB はそれぞれ特定の conda 環境を必要とする。各モジュールは必要な関数内で遅延インポートされているため、環境を分けて使用できる。
 
 ```
-hoddies 環境  — HODDIES, mpytools, CAMB
-               → mock 生成 / ng 計算に必要
+hoddies 環境  — HODDIES, mpytools, CAMB, colossus, mcfit
+               → ng 計算 / mock 生成に必要
 ```
 
 ```bash
@@ -34,6 +34,8 @@ pip install -e .
 ```
 hodmock/
 ├── config.py               # HodMockConfig — 全設定値を一元管理
+├── halomodel/              # ハローモデル計算（HMF, Pmm, NFW, HOD）
+│   └── halomodel.py
 ├── params/
 │   └── rescale.py          # Ac/As rescaling ロジック
 ├── mock/
@@ -62,28 +64,68 @@ cfg = HodMockConfig(z_list=[0.5, 0.8, 1.0, 1.5])
 cfg = replace(cfg, nthreads=8, mock_outdir=Path("/scratch/mock"))
 ```
 
-### 主要フィールド
+### スナップショット設定
 
 | フィールド | デフォルト | 説明 |
 |---|---|---|
-| `z_list` | Uchuu スナップショット 17 点 | 対象赤方偏移リスト |
-| `z_to_halodir` | `{z: "halodir_???"}` | z → ハローカタログサブディレクトリ名 |
+| `z_list` | Uchuu スナップショット 17 点 (z=0.63–2.31) | 対象赤方偏移リスト |
+| `z_to_halodir` | `{z: "halodir_NNN"}` | z → ハローカタログサブディレクトリ名 |
+| `halobase` | `/data/PFS/Uchuu/RockstarExtendedM200c1e11` | ハローカタログのベースディレクトリ |
+
+### サーベイターゲット ng
+
+| フィールド | デフォルト | 説明 |
+|---|---|---|
 | `pfs_bins` | 7 z ビン (0.6–2.4) | PFS ELG z ビン定義 |
 | `pfs_ng` | PFS ターゲット ng | ターゲット銀河数密度 [(Mpc/h)^-3] |
-| `hod_bins` | `[(0.8,1.1), (1.1,1.6)]` | rescaling 用 HOD パラメータ bin |
+
+### HOD ベースライン（rescaling 用）
+
+| フィールド | デフォルト | 説明 |
+|---|---|---|
+| `hod_bins` | `[(0.8,1.1), (1.1,1.6)]` | rescaling 用パラメータ bin |
 | `hod_ac_base` | `[0.1, 0.1]` | ベースライン Ac（ng 計算基準） |
 | `hod_as_base` | `[0.38, 0.47]` | ベースライン As（HODDIES 絶対振幅） |
-| `halobase` | `/data/PFS/Uchuu/RockstarExtendedM200c1e11` | ハローカタログのベースディレクトリ |
-| `mock_outdir` | `/home/honke/data/HOD_mock` | mock 出力先 |
-| `nthreads` | `27` | 並列読み込みスレッド数 |
+
+### コスモロジー / ハローモデル
+
+| フィールド | デフォルト | 説明 |
+|---|---|---|
+| `cosmo_params` | Planck 2018 | CAMB に渡すコスモロジーパラメータ |
+| `colossus_cosmo` | `"planck18"` | Colossus のコスモロジー名 |
+| `hmf_model` | `"tinker08"` | ハロー質量関数モデル |
+| `conc_model` | `"diemer19"` | ハロー集中度モデル |
+| `bias_model` | `"tinker10"` | ハローバイアスモデル |
+| `halomodel_Nr` | `512` | NFW Fourier 変換の動径グリッド点数 |
+| `k_arr` | `logspace(-4, 3, 1000)` | 波数グリッド [h/Mpc] |
+| `m_arr` | `logspace(10, 15, 200)` | ハロー質量グリッド [Msun/h] |
+
+コスモロジーやモデルを切り替える場合:
+
+```python
+from dataclasses import replace
+cfg = replace(
+    HodMockConfig(),
+    hmf_model="sheth99",
+    conc_model="duffy08",
+    cosmo_params={"H0": 69.3, "ombh2": 0.0226, "omch2": 0.113, "As": 2.1e-9, "ns": 0.972},
+    colossus_cosmo="wmap9",
+)
+```
+
+### シミュレーション / 出力設定
+
+| フィールド | デフォルト | 説明 |
+|---|---|---|
+| `mass_cut` | `11.0` | ハロー質量下限カット log10(M200c / [Msun/h]) |
+| `nthreads` | `27` | ハローカタログ並列読み込みのスレッド数 |
 | `seed` | `42` | 乱数シード |
 | `tracer` | `"ELG"` | トレーサー名（HODDIES に渡す） |
-
-> **注意**: `z_to_halodir` の `"halodir_???"` は実際の Uchuu スナップショット番号に要更新。現在 z=0.94 (`halodir_034`) のみ設定済み。
+| `mock_outdir` | `/home/honke/data/HOD_mock` | mock 出力先ディレクトリ |
 
 ## HODDIES の As 規約について
 
-HODDIES では `Ac` と `As` は独立した**絶対振幅**。halomodel_module の `As` は比率（`Ns = Ac * As_ratio * f_sat`）とは異なる。
+HODDIES では `Ac` と `As` は独立した**絶対振幅**。`hodmock.halomodel` の `As` は比率（`Ns = Ac * As_ratio * f_sat`）とは異なる。
 
 rescaling での計算式:
 
@@ -93,10 +135,10 @@ Ac    = hod_ac_base * scale
 As    = hod_as_base * scale    ← HODDIES YAML に書く値
 ```
 
-halomodel_module で検証する場合:
+`hodmock.halomodel` で検証する場合:
 
 ```
-As_ratio = As / Ac    ← halomodel_module に渡す値
+As_ratio = As / Ac    ← halomodel に渡す値
 ```
 
 ## 使い方
@@ -162,7 +204,7 @@ hcat = load_hcat(cfg.halodir(0.94), cfg.mass_cut, cfg.nthreads)
 ## テンプレート YAML の編集
 
 `mock/template/Uchuu_ELG_template.yaml` が HODDIES に渡す設定ファイルのテンプレート。
-以下 4 つのプレースホルダが `generate_yaml()` で置き換えられる。
+以下のプレースホルダが `generate_yaml()` で置き換えられる。
 
 | プレースホルダ | 置き換え後 |
 |---|---|
@@ -170,9 +212,11 @@ hcat = load_hcat(cfg.halodir(0.94), cfg.mass_cut, cfg.nthreads)
 | `__AS__` | As（rescale 後、HODDIES 絶対振幅） |
 | `__DENSITY__` | ng_pfs |
 | `__Z__` | スナップショット赤方偏移 |
+| `__MASS_CUT__` | `cfg.mass_cut`（ハロー質量下限カット） |
+
+`mass_cut` はテンプレートと `load_hcat()` の両方で同じ `cfg.mass_cut` が使われるため、常に一致する。
 
 ## 今後の予定
 
 - `params/mcmc.py` — DESI xi からの MCMC フィット
-- `z_to_halodir` の全スナップショット番号を埋める
 - PBS / qsub ジョブ投入スクリプト（`scripts/submit_pbs.py`）
